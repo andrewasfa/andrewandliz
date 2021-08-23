@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <script type="text/javascript">
+  function selectInfo(elem) {
+    document.getElementById('info-container').innerHTML = document.getElementById(elem.value).innerHTML;
+  }
+  </script>
+  
+  <select class="form-control input-lg" onchange="selectInfo(this)" >
+    <option value="aud">AUD</option>
+    <option value="eur">EUR</option>
+    <option value="gbp">GBP</option>
+    <option value="usd">USD</option>
+  </select>
+
+  <div id="info-container">
+
+  </div>
+
+  <div class="hidden">
+
+    <div id="aud" class="curr-info">
+      <label  for="aud">AUD</label>
+      <text>AUD details here</text>
+    </div>
+    <div id="eur" class="curr-info">
+      <label  for="eur">EUR</label>
+      <text>EUR details here</text>
+    </div>
+    <div id="gbp" class="curr-info">
+      <label  for="gbp">GBP</label>
+      <text>GBP details here</text>
+    </div>
+    <div id="usd" class="curr-info">
+      <label  for="usd">USD</label>
+      <text>USD details here</text>
+    </div>
+  </div>
+</body>
+</html>
