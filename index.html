@@ -1,45 +1,378 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
   <link rel="stylesheet" href="styles.css"/>
+
+  <link rel="stylesheet" href="https://d1mviimjnzagon.cloudfront.net/fonts/bombshell/v1/bombshell.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
 </head>
-<body>
+<body onload="init()">
+  <script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyDK8FUr6mNoU5rUWbKLmc8UZbyfSz4IQFE",
+    authDomain: "gettingmarried-7b376.firebaseapp.com",
+    projectId: "gettingmarried-7b376",
+    storageBucket: "gettingmarried-7b376.appspot.com",
+    messagingSenderId: "572180581075",
+    appId: "1:572180581075:web:89631c879d380c7c066226"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  var db = firebase.firestore();
+  let msgCount = 0;
+  db.collection("wishes").get().then((querySnapshot) => {
+    msgCount = querySnapshot.size;
+    querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} => ${doc.data().text}`);
+        let msgData = doc.data();
+        let msg = document.createElement("div");
+        msg.innerHTML = `
+          <div id='${doc.id}' class="container" >
+            <div class="card-body">
+            <p id="componentText" class="card-text">${msgData.text}</p>
+            <figcaption id="componentFrom" class="blockquote-footer">
+              ${msgData.from}
+            </figcaption>
+            </div>
+          </div>
+        `
+        document.getElementById("messagesContainer").appendChild(msg);
+    });
+    // let count = document.getElementById('messagesContainer').children.length;
+    console.log(msgCount);
+    if (msgCount == 0 ){
+      document.getElementById('noMessages').style.display = 'block';
+    }
+  });
+
+
+  function sendMessage(){
+    let checked = document.getElementById('newMessageCheck').checked;
+    if (!checked) return
+    const from = document.getElementById('messageFrom').value;
+    const body = document.getElementById('messageBody').value;
+    console.log("new msg", from, body);
+    // Add a new document with a generated id.
+    db.collection("wishes").add({
+        from: from,
+        text: body
+    })
+    .then((docRef) => {
+        console.log("Message saved");
+        document.getElementById('messageFrom').value = '';
+        document.getElementById('messageBody').value = '';
+        document.getElementById('sentConfirmationText').style.display = 'block';
+
+    })
+    .catch((error) => {
+        console.error("Error sending message: ", error);
+    });
+  }
+
+  </script>
 
   <script type="text/javascript">
+  function init(){
+    document.getElementById('info-container').innerHTML = document.getElementById('aud').innerHTML;
+    //toggleMessageForm();
+    document.getElementById('newMessageForm').style.display='none';
+  }
+
   function selectInfo(elem) {
     document.getElementById('info-container').innerHTML = document.getElementById(elem.value).innerHTML;
   }
-  </script>
-  
-  <select class="form-control input-lg" onchange="selectInfo(this)" >
-    <option value="aud">AUD</option>
-    <option value="eur">EUR</option>
-    <option value="gbp">GBP</option>
-    <option value="usd">USD</option>
-  </select>
 
-  <div id="info-container">
+  function toggleMessageForm(){
+    let checked = document.getElementById('newMessageCheck').checked;
+    console.log(checked);
+    if (checked){
+      document.getElementById('newMessageForm').style.display='block';
+      console.log("should be visible");
+    } else{
+      document.getElementById('newMessageForm').style.display='none';
+    }
+  }
+
+
+  </script>
+
+  <div class="container">
+    <!-- <div class="card "> -->
+      <!-- <div class="card-img"> -->
+        <img src="https://uploads.sayi.do/u1pMwA346wTLUP1DfAbAPc2AZ7g2/images/2cfa3bd1-b932-8fd4-1d5a-66f6223067b7_Localgrapher_2.jpg" class="card-img main-img" alt="...">
+      <!-- </div> -->
+      <h1 class="titlefont extra-padding">Andrew and Elizabeth</h1>
+    <!-- </div> -->
+      <h2 class="funnyfont">Thank you for considering to contribute to our "Getting married" fund.</h2>
+
+      <div class="row mx-auto extra-padding">
+        <div class="col">
+          <p>You can choose the currency in which you would like to contribute and use the selected account to transfer from your local bank.</p>
+          <select id="selector" class="form-select" onchange="selectInfo(this)"  >
+            <option selected value="aud">AUD</option>
+            <option value="eur">EUR</option>
+            <option value="gbp">GBP</option>
+            <option value="usd">USD</option>
+          </select>
+        </div>
+        <div class="col">
+          <div id="info-container" class="account-details">
+          </div>
+        </div>
+      </div>
+
+      <div class="row mx-auto">
+        <div class="col">
+
+          <input class="form-check-input" type="checkbox" value="" onchange="toggleMessageForm()" id="newMessageCheck">
+          I'd also like to leave a message 
+
+        </div>
+      </div>
+
+      <div class="row mx-auto" id="newMessageForm">
+        <div class="col">
+          <div class="mb-3">
+            <label for="messageFrom" class="form-label">From</label>
+            <input type="text" class="form-control" id="messageFrom" placeholder="">
+          </div>
+          <div class="mb-3">
+            <label for="messageBody" class="form-label">Message</label>
+            <textarea class="form-control" id="messageBody" rows="3"></textarea>
+          </div>
+          <div class="col-auto">
+            <button type="submit" onclick="sendMessage()" class="btn btn-primary mb-3">Send</button>
+          </div>
+          <h2 style="display: none;" id="sentConfirmationText" class="">Thank you, your message was sent! You can refresh the page to see it.</h2>
+
+        </div>
+
+      </div>
+
+    </div>
+
+      <div class="container">
+        <h1 class="titlefont">Messages</h1>
+        <div id="messagesContainer" class="container" >
+          <h3 id="noMessages" style="display:none; text-align: center;;">No messages yet</h3>
+        </div>
+      </div>
 
   </div>
 
   <div class="hidden">
 
+    <div id='componentMessage' class="container" >
+      <div class="card-body">
+        <p id="componentText" class="card-text">Sample text.</p>
+        <figcaption id="componentFrom" class="blockquote-footer">
+          Sample name
+        </figcaption>
+      </div>
+    </div>
+
+    <div id="eur" class="curr-info card">
+
+      <div class="row">
+        <div class="col">
+          <b>Account holder</b>
+        </div>
+        <div class="col">
+          Andrey Asfaganov
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="col">
+          <b>BIC</b>
+        </div>
+        <div class="col">
+          TRWIBEB1XXX
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="col">
+          <b>IBAN</b>
+        </div>
+        <div class="col">
+          BE44 9672 1911 1545
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Address</b>
+        </div>
+        <div class="col">
+          Avenue Louise 54, Room S52<br>
+          Brussels<br>
+          1050<br>
+          Belgium
+        </div>
+      </div>
+
+    </div>
+
+
+<!-- EUR -->
     <div id="aud" class="curr-info">
-      <label  for="aud">AUD</label>
-      <text>AUD details here</text>
+
+      <div class="row">
+        <div class="col">
+          <b>Account holder</b>
+        </div>
+        <div class="col">
+          Andrey Asfaganov
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>BSB code</b>
+        </div>
+        <div class="col">
+          802-985
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Account number</b>
+        </div>
+        <div class="col">
+          316170303
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Address</b>
+        </div>
+        <div class="col">
+          Transferwise<br>
+          36-38 Gipps Street<br>
+          Collingwood 3066 Australia
+        </div>
+      </div>
+
     </div>
-    <div id="eur" class="curr-info">
-      <label  for="eur">EUR</label>
-      <text>EUR details here</text>
-    </div>
+
+
+
+<!-- GBP -->
     <div id="gbp" class="curr-info">
-      <label  for="gbp">GBP</label>
-      <text>GBP details here</text>
+      <div class="row">
+        <div class="col">
+          <b>Account holder</b>
+        </div>
+        <div class="col">
+          Andrey Asfaganov
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Sort code</b>
+        </div>
+        <div class="col">
+          23-14-70
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Account number</b>
+        </div>
+        <div class="col">
+          29201610
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>IBAN</b>
+        </div>
+        <div class="col">
+          GB73 TRWI 2314 7029 2016 10
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Address</b>
+        </div>
+        <div class="col">
+          TransferWise <br>
+          56 Shoreditch High Street <br>
+          London <br>
+          E1 6JJ <br>
+          United Kingdom 
+        </div>
+      </div>
+
     </div>
+
+<!-- USD -->
     <div id="usd" class="curr-info">
-      <label  for="usd">USD</label>
-      <text>USD details here</text>
+      <div class="row">
+        <div class="col">
+          <b>Account holder </b>
+        </div>
+        <div class="col">
+          Andrey Asfaganov
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Routing number</b>
+        </div>
+        <div class="col">
+          XXXXXXX
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Account number</b>
+        </div>
+        <div class="col">
+          1234 1234 1234 1234
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Account type</b>
+        </div>
+        <div class="col">
+          Checking
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>Address</b>
+        </div>
+        <div class="col">
+          TransferWise <br>
+          19 W 24th Street <br>
+          New York NY 10010 <br>
+          United States
+        </div>
+      </div>
+
     </div>
   </div>
+
 </body>
+
 </html>
